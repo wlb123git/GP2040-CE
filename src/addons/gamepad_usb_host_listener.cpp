@@ -72,11 +72,12 @@ void GamepadUSBHostListener::process_ctrlr_report(uint8_t dev_addr, uint8_t cons
             process_ultrastik360(report);
             break;
         default:
+            process_xinput(report);
             break;
     }
 }
 
-uint16_t GamepadUSBHostListener::map(uint8_t x, uint8_t in_min, uint8_t in_max, uint16_t out_min, uint16_t out_max) {
+uint16_t GamepadUSBHostListener::map(int16_t x, int16_t in_min, int16_t in_max, uint16_t out_min, uint16_t out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
@@ -206,4 +207,37 @@ void GamepadUSBHostListener::process_ultrastik360(uint8_t const* report) {
     if (controller_report.BTN_GamePadButton6 == 1) _controller_host_state.buttons |= GAMEPAD_MASK_L2;
     if (controller_report.BTN_GamePadButton7 == 1) _controller_host_state.buttons |= GAMEPAD_MASK_R1;
     if (controller_report.BTN_GamePadButton8 == 1) _controller_host_state.buttons |= GAMEPAD_MASK_R2;
+}
+
+void GamepadUSBHostListener::process_xinput(uint8_t const* report) {
+
+    xinputreport_t controller_report;
+
+    memcpy(&controller_report, report, sizeof(controller_report));
+
+    _controller_host_state.lx = map(controller_report.GD_GamePadPointerX, -32768, 32767, GAMEPAD_JOYSTICK_MIN,GAMEPAD_JOYSTICK_MAX);
+    _controller_host_state.ly = map(-controller_report.GD_GamePadPointerY, -32768, 32767, GAMEPAD_JOYSTICK_MIN,GAMEPAD_JOYSTICK_MAX);
+    _controller_host_state.rx = map(controller_report.GD_GamePadPointerZ, -32768, 32767, GAMEPAD_JOYSTICK_MIN,GAMEPAD_JOYSTICK_MAX);
+    _controller_host_state.ry = map(-controller_report.GD_GamePadPointerRz, -32768, 32767, GAMEPAD_JOYSTICK_MIN,GAMEPAD_JOYSTICK_MAX);
+
+    _controller_host_state.lt = controller_report.SIM_GamePadBrake;
+    _controller_host_state.rt = controller_report.SIM_GamePadAccelerator;
+    if (_controller_host_state.lt >= XINPUT_GAMEPAD_TRIGGER_THRESHOLD) _controller_host_state.buttons |= GAMEPAD_MASK_L2;
+    if (_controller_host_state.rt >= XINPUT_GAMEPAD_TRIGGER_THRESHOLD) _controller_host_state.buttons |= GAMEPAD_MASK_R2;
+
+    if (controller_report.BTN_GamePadButton0 == 1) _controller_host_state.dpad |= GAMEPAD_MASK_UP;
+    if (controller_report.BTN_GamePadButton1 == 1) _controller_host_state.dpad |= GAMEPAD_MASK_DOWN;
+    if (controller_report.BTN_GamePadButton2 == 1) _controller_host_state.dpad |= GAMEPAD_MASK_LEFT;
+    if (controller_report.BTN_GamePadButton3 == 1) _controller_host_state.dpad |= GAMEPAD_MASK_RIGHT;
+    if (controller_report.BTN_GamePadButton4 == 1) _controller_host_state.buttons |= GAMEPAD_MASK_S2;
+    if (controller_report.BTN_GamePadButton5 == 1) _controller_host_state.buttons |= GAMEPAD_MASK_S1;
+    if (controller_report.BTN_GamePadButton6 == 1) _controller_host_state.buttons |= GAMEPAD_MASK_L3;
+    if (controller_report.BTN_GamePadButton7 == 1) _controller_host_state.buttons |= GAMEPAD_MASK_R3;
+    if (controller_report.BTN_GamePadButton8 == 1) _controller_host_state.buttons |= GAMEPAD_MASK_L1;
+    if (controller_report.BTN_GamePadButton9 == 1) _controller_host_state.buttons |= GAMEPAD_MASK_R1;
+    if (controller_report.BTN_GamePadButton10 == 1) _controller_host_state.buttons |= GAMEPAD_MASK_A1;
+    if (controller_report.BTN_GamePadButton12 == 1) _controller_host_state.buttons |= GAMEPAD_MASK_B1;
+    if (controller_report.BTN_GamePadButton13 == 1) _controller_host_state.buttons |= GAMEPAD_MASK_B2;
+    if (controller_report.BTN_GamePadButton14 == 1) _controller_host_state.buttons |= GAMEPAD_MASK_B3;
+    if (controller_report.BTN_GamePadButton15 == 1) _controller_host_state.buttons |= GAMEPAD_MASK_B4;
 }
