@@ -112,6 +112,42 @@ typedef struct TU_ATTR_PACKED
 
 } ultrastik360_t;
 
+// XInput
+
+#define XINPUT_GAMEPAD_TRIGGER_THRESHOLD 40
+
+typedef struct TU_ATTR_PACKED
+{
+    uint8_t reportId;
+    uint8_t reportSize;
+    struct
+    {
+        uint8_t  BTN_GamePadButton0 : 1;                  // Usage 0x0001: Button 0, Value = 0 to 1                :: wButtons: XINPUT_GAMEPAD_DPAD_UP
+        uint8_t  BTN_GamePadButton1 : 1;                  // Usage 0x0002: Button 1, Value = 0 to 1                :: wButtons: XINPUT_GAMEPAD_DPAD_DOWN
+        uint8_t  BTN_GamePadButton2 : 1;                  // Usage 0x0004: Button 2, Value = 0 to 1                :: wButtons: XINPUT_GAMEPAD_DPAD_LEFT
+        uint8_t  BTN_GamePadButton3 : 1;                  // Usage 0x0008: Button 3, Value = 0 to 1                :: wButtons: XINPUT_GAMEPAD_DPAD_RIGHT
+        uint8_t  BTN_GamePadButton4 : 1;                  // Usage 0x0010: Button 4, Value = 0 to 1                :: wButtons: XINPUT_GAMEPAD_START
+        uint8_t  BTN_GamePadButton5 : 1;                  // Usage 0x0020: Button 5, Value = 0 to 1                :: wButtons: XINPUT_GAMEPAD_BACK
+        uint8_t  BTN_GamePadButton6 : 1;                  // Usage 0x0040: Button 6, Value = 0 to 1                :: wButtons: XINPUT_GAMEPAD_LEFT_THUMB
+        uint8_t  BTN_GamePadButton7 : 1;                  // Usage 0x0080: Button 7, Value = 0 to 1                :: wButtons: XINPUT_GAMEPAD_RIGHT_THUMB
+        uint8_t  BTN_GamePadButton8 : 1;                  // Usage 0x0100: Button 8, Value = 0 to 1                :: wButtons: XINPUT_GAMEPAD_LEFT_SHOULDER
+        uint8_t  BTN_GamePadButton9 : 1;                  // Usage 0x0200: Button 9, Value = 0 to 1                :: wButtons: XINPUT_GAMEPAD_RIGHT_SHOULDER
+        uint8_t  BTN_GamePadButton10 : 1;                 // Usage 0x0000: Button 10, Value = 0 to 1               :: wButtons: XINPUT_GAMEPAD_HOME
+        uint8_t  BTN_GamePadButton11 : 1;                 // Usage 0x0000: Button 11, Value = 0 to 1               :: wButtons: UNKNOWN
+        uint8_t  BTN_GamePadButton12 : 1;                 // Usage 0x1000: Button 12, Value = 0 to 1               :: wButtons: XINPUT_GAMEPAD_A
+        uint8_t  BTN_GamePadButton13 : 1;                 // Usage 0x2000: Button 13, Value = 0 to 1               :: wButtons: XINPUT_GAMEPAD_B
+        uint8_t  BTN_GamePadButton14 : 1;                 // Usage 0x4000: Button 14, Value = 0 to 1               :: wButtons: XINPUT_GAMEPAD_X
+        uint8_t  BTN_GamePadButton15 : 1;                 // Usage 0x8000: Button 15, Value = 0 to 1               :: wButtons: XINPUT_GAMEPAD_Y
+    };
+    uint8_t SIM_GamePadBrake;                             // Usage 0x0000: lt, Value = 0 to 255                    :: bLeftTrigger
+    uint8_t SIM_GamePadAccelerator;                       // Usage 0x0000: rt, Value = 0 to 255                    :: bRightTrigger
+    int16_t GD_GamePadPointerX;                           // Usage 0x0000: lx, Value = -32768 to 32767             :: sThumbLX
+    int16_t GD_GamePadPointerY;                           // Usage 0x0000: ly, Value = -32768 to 32767             :: sThumbLY
+    int16_t GD_GamePadPointerZ;                           // Usage 0x0000: rx, Value = -32768 to 32767             :: sThumbRX
+    int16_t GD_GamePadPointerRz;                          // Usage 0x0000: ry, Value = -32768 to 32767             :: sThumbRY
+    uint8_t padding[6];
+} xinputreport_t;
+
 // Add other controller structs here
 class GamepadUSBHostListener : public USBListener {
     public:// USB Listener Features
@@ -133,10 +169,11 @@ class GamepadUSBHostListener : public USBListener {
         void process_ds4(uint8_t const* report);
         void process_stadia(uint8_t const* report);
         void process_ultrastik360(uint8_t const* report);
+        void process_xinput(uint8_t const* report);
 
         uint16_t controller_pid, controller_vid;
 
-        uint16_t map(uint8_t x, uint8_t in_min, uint8_t in_max, uint16_t out_min, uint16_t out_max);
+        uint16_t map(int16_t x, int16_t in_min, int16_t in_max, uint16_t out_min, uint16_t out_max);
 
         // check if different than 2
         bool diff_than_2(uint8_t x, uint8_t y);
